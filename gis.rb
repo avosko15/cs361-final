@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby
 
 class Track
-  def initialize(segments, name=nil)
-    @name = name
-    segment_objects = []
+  attr_reader :name, :segments
+
+  def initialize(args)
+    @name = args[:name]
+    @segments = args[:segments]
+    
     segments.each do |s|
       segment_objects.append(TrackSegment.new(s))
     end
@@ -50,6 +53,7 @@ class Track
 end
 class TrackSegment
   attr_reader :coordinates
+
   def initialize(coordinates)
     @coordinates = coordinates
   end
@@ -67,15 +71,14 @@ class Point
 end
 
 class Waypoint
-
-attr_reader :lat, :lon, :ele, :name, :type
+  attr_reader :lat, :lon, :ele, :name, :type
 
   def initialize(lon, lat, ele=nil, name=nil, type=nil)
-    @lat = lat
-    @lon = lon
-    @ele = ele
-    @name = name
-    @type = type
+    @lat = args[:lat]
+    @lon = args[:lon]
+    @ele = args[:ele] || ''
+    @name = args[:name] || ''
+    @type = args[:type] || ''
   end
 
   def get_waypoint_json(indent=0)
@@ -106,41 +109,45 @@ attr_reader :lat, :lon, :ele, :name, :type
 end
 
 class World
-def initialize(name, things)
+def initialize(name, features)
   @name = name
-  @features = things
+  @features = features
 end
-  def add_feature(f)
-    @features.append(t)
+  def add_feature(feature)
+    @features.append(type)
   end
 
-  def to_geojson(indent=0)
-    # Write stuff
-    s = '{"type": "FeatureCollection","features": ['
-    @features.each_with_index do |f,i|
-      if i != 0
-        s += ","
+  def to_geojson(indent=0)# do i need the indent?
+
+    string = '{"type": "FeatureCollection","features": ['
+    @features.each_with_index do |feature,index|
+      if index != 0
+        string += ","
       end
-        if f.class == Track
-            s += f.get_track_json
-        elsif f.class == Waypoint
-            s += f.get_waypoint_json
+        if feature.class == Track
+            string += feature.get_track_json
+        elsif feature.class == Waypoint
+            string += feature.get_waypoint_json
       end
     end
-    s + "]}"
+    string + "]}"
   end
 end
 
 def main()
   w = Waypoint.new(-121.5, 45.5, 30, "home", "flag")
   w2 = Waypoint.new(-121.5, 45.6, nil, "store", "dot")
+
   ts1 = [
-  Point.new(-122, 45),
-  Point.new(-122, 46),
-  Point.new(-121, 46),
+    Point.new(-122, 45),
+    Point.new(-122, 46),
+    Point.new(-121, 46),
   ]
 
-  ts2 = [ Point.new(-121, 45), Point.new(-121, 46), ]
+  ts2 = [ 
+    Point.new(-121, 45),
+    Point.new(-121, 46), 
+  ]
 
   ts3 = [
     Point.new(-121, 45.5),
