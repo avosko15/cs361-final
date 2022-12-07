@@ -15,7 +15,7 @@ class Track
     j = '{'
     j += '"type": "Feature", '
     if @name != nil
-      j+= '"properties": {'
+      j += '"properties": {'
       j += '"title": "' + @name + '"'
       j += '},'
     end
@@ -42,8 +42,8 @@ class Track
         end
         tsj += ']'
       end
-      j+=tsj
-      j+=']'
+      j += tsj
+      j += ']'
     end
     j + ']}}'
   end
@@ -67,8 +67,6 @@ class Point
 end
 
 class Waypoint
-
-
 
 attr_reader :lat, :lon, :ele, :name, :type
 
@@ -121,7 +119,7 @@ end
     s = '{"type": "FeatureCollection","features": ['
     @features.each_with_index do |f,i|
       if i != 0
-        s +=","
+        s += ","
       end
         if f.class == Track
             s += f.get_track_json
