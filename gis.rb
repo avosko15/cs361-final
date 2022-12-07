@@ -6,31 +6,25 @@ class Track
   def initialize(args)
     @name = args[:name]
     @segments = args[:segments]
-    
-    segments.each do |s|
-      segment_objects.append(TrackSegment.new(s))
-    end
-    # set segments to segment_objects
-    @segments = segment_objects
   end
 
   def get_track_json()
-    j = '{'
-    j += '"type": "Feature", '
+    json = '{'
+    json += '"type": "Feature", '
     if @name != nil
-      j += '"properties": {'
-      j += '"title": "' + @name + '"'
-      j += '},'
+      json += '"properties": {'
+      json += '"title": "' + @name + '"'
+      json += '},'
     end
-    j += '"geometry": {'
-    j += '"type": "MultiLineString",'
-    j +='"coordinates": ['
+    json += '"geometry": {'
+    json += '"type": "MultiLineString",'
+    json +='"coordinates": ['
     # Loop through all the segment objects
     @segments.each_with_index do |s, index|
       if index > 0
-        j += ","
+        json += ","
       end
-      j += '['
+        json += '['
       # Loop through all the coordinates in the segment
       tsj = ''
       s.coordinates.each do |c|
@@ -45,12 +39,13 @@ class Track
         end
         tsj += ']'
       end
-      j += tsj
-      j += ']'
+      json += tsj
+      json += ']'
     end
-    j + ']}}'
+    json + ']}}'
   end
 end
+
 class TrackSegment
   attr_reader :coordinates
 
@@ -60,7 +55,6 @@ class TrackSegment
 end
 
 class Point
-
   attr_reader :lat, :lon, :ele
 
   def initialize(lon, lat, ele=nil)
@@ -73,7 +67,7 @@ end
 class Waypoint
   attr_reader :lat, :lon, :ele, :name, :type
 
-  def initialize(lon, lat, ele=nil, name=nil, type=nil)
+  def initialize(args)
     @lat = args[:lat]
     @lon = args[:lon]
     @ele = args[:ele] || ''
@@ -81,46 +75,45 @@ class Waypoint
     @type = args[:type] || ''
   end
 
-  def get_waypoint_json(indent=0)
-    j = '{"type": "Feature",'
-    # if name is not nil or type is not nil
-    j += '"geometry": {"type": "Point","coordinates": '
-    j += "[#{@lon},#{@lat}"
+  def get_waypoint_json
+    json = '{"type": "Feature",'
+    json += '"geometry": {"type": "Point","coordinates": '
+    json += "[#{@lat},#{@lon}"
     if ele != nil
-      j += ",#{@ele}"
+      json += ",#{@ele}"
     end
-    j += ']},'
+    json += ']},'
     if name != nil or type != nil
-      j += '"properties": {'
+      json += '"properties": {'
       if name != nil
-        j += '"title": "' + @name + '"'
+        json += '"title": "' + @name + '"'
       end
-      if type != nil  # if type is not nil
+      if type != nil
         if name != nil
-          j += ','
+          json += ','
         end
-        j += '"icon": "' + @type + '"'  # type is the icon
+        json += '"icon": "' + @type + '"'
       end
-      j += '}'
+      json += '}'
     end
-    j += "}"
-    return j
+    json += "}"
+    return json
   end
 end
 
 class World
-def initialize(name, features)
-  @name = name
-  @features = features
-end
+  def initialize(name, features)
+    @name = name
+    @features = features
+  end
+
   def add_feature(feature)
     @features.append(type)
   end
 
-  def to_geojson(indent=0)# do i need the indent?
-
+  def to_geojson
     string = '{"type": "FeatureCollection","features": ['
-    @features.each_with_index do |feature,index|
+    @features.each_with_index do |feature, index|
       if index != 0
         string += ","
       end
@@ -135,8 +128,8 @@ end
 end
 
 def main()
-  w = Waypoint.new(-121.5, 45.5, 30, "home", "flag")
-  w2 = Waypoint.new(-121.5, 45.6, nil, "store", "dot")
+  w = Waypoint.new(:lat => -121.5, :lon => 45.5, :ele => 30, :name => "home", :type => "flag")
+  w2 = Waypoint.new(:lat => -121.5, :lon => 45.6, :ele => nil, :name => "store", :type => "dot")
 
   ts1 = [
     Point.new(-122, 45),
@@ -154,8 +147,8 @@ def main()
     Point.new(-122, 45.5),
   ]
 
-  t = Track.new([ts1, ts2], "track 1")
-  t2 = Track.new([ts3], "track 2")
+  t = Track.new(:segments => [TrackSegment.new(ts1), TrackSegment.new(ts2)], :name => "track 1")
+  t2 = Track.new(:segments => [TrackSegment.new(ts3)], :name => "track 2")
 
   world = World.new("My Data", [w, w2, t, t2])
 
